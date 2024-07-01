@@ -78,3 +78,37 @@ public class GameManager : MonoBehaviour
         }
     }
 }
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Cell : MonoBehaviour
+{
+    public int row;
+    public int column;
+    public bool isMine;
+    public bool isRevealed;
+
+    private GameManager gameManager;
+    private Button button;
+
+    public void Init(int row, int col, GameManager manager)
+    {
+        this.row = row;
+        this.column = col;
+        this.gameManager = manager;
+        this.button = GetComponent<Button>();
+        this.button.onClick.AddListener(OnCellClicked);
+    }
+
+    void OnCellClicked()
+    {
+        gameManager.RevealCell(row, column);
+    }
+
+    public void Reveal()
+    {
+        isRevealed = true;
+        GetComponent<Image>().color = Color.gray;
+        // Add logic to display number of adjacent mines if needed
+    }
+}
