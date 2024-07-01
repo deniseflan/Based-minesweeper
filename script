@@ -1,0 +1,80 @@
+# Based-minesweeper
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using Thirdweb;
+
+public class GameManager : MonoBehaviour
+{
+    public GameObject cellPrefab;
+    public GridLayoutGroup gridLayoutGroup;
+    public int rows = 10;
+    public int columns = 10;
+    public int mines = 20;
+    public Button connectWalletButton;
+    public Text walletAddressText;
+
+    private Cell[,] cells;
+    private ThirdwebSDK sdk;
+
+    void Start()
+    {
+        sdk = new ThirdwebSDK("rinkeby"); // or the blockchain you're using
+        CreateBoard();
+        connectWalletButton.onClick.AddListener(ConnectWallet);
+    }
+
+    void CreateBoard()
+    {
+        cells = new Cell[rows, columns];
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                GameObject newCell = Instantiate(cellPrefab, gridLayoutGroup.transform);
+                cells[row, col] = newCell.GetComponent<Cell>();
+                cells[row, col].Init(row, col, this);
+            }
+        }
+
+        // Place mines
+        for (int i = 0; i < mines; i++)
+        {
+            int row, col;
+            do
+            {
+                row = Random.Range(0, rows);
+                col = Random.Range(0, columns);
+            } while (cells[row, col].isMine);
+
+            cells[row, col].isMine = true;
+        }
+    }
+
+    public void RevealCell(int row, int col)
+    {
+        if (cells[row, col].isMine)
+        {
+            Debug.Log("Game Over!");
+            // Handle game over logic
+        }
+        else
+        {
+            cells[row, col].Reveal();
+            // Add logic to reveal adjacent cells if needed
+        }
+    }
+
+    public async void ConnectWallet()
+    {
+        try
+        {
+            string address = await sdk.wallet.Connect();
+            walletAddressText.text = $"Connected: {address}";
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to connect wallet: {e.Message}");
+        }
+    }
+}
